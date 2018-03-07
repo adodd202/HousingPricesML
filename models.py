@@ -4,20 +4,18 @@ from sklearn.ensemble import RandomForestRegressor,  GradientBoostingRegressor, 
 from sklearn.kernel_ridge import KernelRidge
 from sklearn import clone
 from sklearn import tree
+from sklearn.model_selection import KFold, cross_val_score, train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import StratifiedKFold 
+from sklearn.model_selection import KFold 
+from sklearn.svm import SVR
+
+import sys
+sys.path.append(r"home/adodd202/HousingPrices/xgboost/python-package")
 import xgboost as xgb
 import numpy as np
 import lightgbm as lgb
-import tensorflow as tf
 import warnings
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import KFold, cross_val_score, train_test_split
-from sklearn.metrics import mean_squared_error
-# from sklearn.pipeline import make_pipeline
-# from sklearn.preprocessing import RobustScaler
-from sklearn.model_selection import StratifiedKFold 
-from sklearn.model_selection import KFold 
-import warnings
-from sklearn.svm import SVR
 import pandas as pd
 import math
 

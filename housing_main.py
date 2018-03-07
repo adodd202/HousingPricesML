@@ -1,4 +1,3 @@
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import ElasticNet, Lasso,  BayesianRidge, LassoLarsIC
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn.metrics import mean_squared_error
@@ -6,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.svm import SVR
 from sklearn.cross_validation import cross_val_score
+from sklearn import clone
 
 import lightgbm as lgb
 from models import Model, get_error
@@ -13,9 +13,7 @@ import xgboost as xgb
 import numpy as np
 import pandas as pd
 import warnings
-from sklearn import clone
 from bayes_opt import BayesianOptimization
-import warnings
 import random
 from itertools import combinations
 
@@ -42,9 +40,9 @@ def main():
 	# These are then added to the stacking matrix.
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	numRounds = 5
-	add_interaction = 1
-	models = ["lasso", "elastic", "xgb_new", "lgb", "gboost", "gboost_deep", "xgb", "xgb_deep"] #if you're not Andrew, add krr, ridge
+	numRounds = 3
+	add_interaction = 0
+	models = ["lasso", "elastic", "lgb", "gboost", "gboost_deep"] # "xgb", "xgb_deep"#if you're not Andrew, add krr, ridge
 
 	X_stack_train = np.zeros((y_train.shape[0], len(models)*numRounds))
 	X_stack_predict = np.zeros((X_predict.shape[0], len(models)*numRounds))
@@ -72,7 +70,7 @@ def main():
 			# Running model train, validation and prediction
 			instance_pred, cv_error = instance.train_validate(X_train, y_train)
 
-			if cv_error < .12:
+			if cv_error < .2:
 				instance_test_pred = instance.train_predict(X_train, y_train, X_predict)
 
 				# Adding the predictions to the stacking matrices (training/validation, and prediction)
@@ -93,7 +91,7 @@ def main():
 	#optimize_stack(X_stack_train, y_train)
 
 	stack = Stacker(model = "average")
-	stack.stack_valid_predict(X_stack_train, y_train, X_stack_predict, output_csv = "no")
+	stack.stack_valid_predict(X_stack_train, y_train, X_stack_predict, output_csv = "yes")
 
 
 # ~~~~~~~~~~~~~~~~~~ Summary ~~~~~~~~~~~~~~~~~~~~
