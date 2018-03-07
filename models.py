@@ -20,7 +20,6 @@ import warnings
 from sklearn.svm import SVR
 import pandas as pd
 import math
-import random
 
 
 # Turn off warnings
@@ -39,67 +38,60 @@ class Model():
 
 	def __init__(self, alpha = .85, random_state = 1, model = "lasso"):
 		self.model_name = model
-		n_estimators = random.randint(2500, 5000)
-		alpha = random.uniform(.0001, .001)
-		l1_ratio = random.uniform(.7, .95)
-		min_samples_split = random.randint(8, 12)
-		random_state = random.randint(8, 50)
-		max_depth = random.randint(2, 7)
+
 		# Creating the correct model.
 		if model == "gboost":
-
-			self.model = GradientBoostingRegressor(n_estimators=n_estimators, learning_rate=0.05,
-                                   max_depth=max_depth, max_features='sqrt',
-                                   min_samples_leaf=15, min_samples_split=min_samples_split, 
+			self.model = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
+                                   max_depth=4, max_features='sqrt',
+                                   min_samples_leaf=15, min_samples_split=10, 
                                    loss='huber', random_state =5)
 		elif model == "gboost_deep":
-			self.model = GradientBoostingRegressor(n_estimators=n_estimators+2000, learning_rate=0.02,
-                                   max_depth=max_depth + 2, max_features='sqrt',
-                                   min_samples_leaf=17, min_samples_split=min_samples_split+2, 
+			self.model = GradientBoostingRegressor(n_estimators=5000, learning_rate=0.02,
+                                   max_depth=6, max_features='sqrt',
+                                   min_samples_leaf=17, min_samples_split=12, 
                                    loss='huber', random_state =5)
 		elif model == "ridge":
-			self.model = Ridge(alpha = .1)
+			self.model = Ridge(alpha = .0005, random_state = 42)
 		elif model == "lasso":
-			self.model = Lasso(alpha = alpha, random_state = random_state)
+			self.model = Lasso(alpha = .0005, random_state = 42)
 		elif model == "elastic":
-			self.model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state = random_state)
+			self.model = ElasticNet(alpha=.0005, l1_ratio=0.9, random_state=42)
 		elif model == "rf":
-			self.model = RandomForestRegressor(n_estimators = 95, max_depth = 300, random_state = 42)
+			self.model = RandomForestRegressor(n_estimators = 300, max_depth = 350, random_state = 42)
 		elif model == "krr":
-			self.model = KernelRidge(alpha=.6, kernel='polynomial', degree=2, coef0=2.5)
+			self.model = KernelRidge(alpha=0.035448,degree=1.0689655, coef0=7206.896)
+		elif model =="xgb_new":
+			self.model = xgb.XGBRegressor(n_estimators= 6698, max_depth= 1, gamma= 0, min_child_weight= 1)
 		elif model == "xgb":
 			self.model = xgb.XGBRegressor(colsample_bytree=0.4603, gamma=0.0468, 
-                             learning_rate=0.05, max_depth=max_depth, 
-                             min_child_weight=1.7817, n_estimators=n_estimators,
+                             learning_rate=0.05, max_depth=3, 
+                             min_child_weight=1.7817, n_estimators=2200,
                              reg_alpha=0.4640, reg_lambda=0.8571,
                              subsample=0.5213, silent=1,
-                             random_state = random_state, nthread = -1)
+                             random_state =7, nthread = -1)
 
 		elif model == "xgb_deep":
 			self.model = xgb.XGBRegressor(colsample_bytree=0.4603, gamma=0.0468, 
-                             learning_rate=0.05, max_depth=max_depth+3, 
-                             min_child_weight=1.7817, n_estimators=n_estimators + 2000,
+                             learning_rate=0.05, max_depth=7, 
+                             min_child_weight=1.7817, n_estimators=4000,
                              reg_alpha=0.4640, reg_lambda=0.8571,
                              subsample=0.5213, silent=1,
-                             random_state = random_state, nthread = -1)
+                             random_state =7, nthread = -1)
 		elif model == "adaboost":
 			self.model = AdaBoostRegressor(tree.DecisionTreeRegressor(),
                           n_estimators=500, random_state=42)
 		elif model == "svr":
 			self.model = SVR(C=10, epsilon=0.0, kernel = 'rbf')
 		elif model == "lgb":
-			feature_fraction = random.uniform(.2, .27)
-			bagging_fraction = random.uniform(.7, .9)
-			max_bin = random.randint(40, 65)
 			self.model = lgb.LGBMRegressor(
 				objective='regression',
 				num_leaves=5,
                 learning_rate=0.05,
-                n_estimators=n_estimators,
-                max_bin = max_bin,
-                bagging_fraction = bagging_fraction,
+                n_estimators=720,
+                max_bin = 55,
+                bagging_fraction = 0.8,
                 bagging_freq = 5,
-                feature_fraction = feature_fraction,
+                feature_fraction = 0.2319,
                 feature_fraction_seed=9,
                 bagging_seed=9,
                 min_data_in_leaf=6,
@@ -132,6 +124,8 @@ class Model():
 		for train_index, test_index in skf.split(X, y):
 			X_train, X_test = X[train_index], X[test_index]
 			y_train, y_test = y[train_index], y[test_index]
+
+			print("Round {}".format(i))
 
 			# Cloning to avoid residual fits
 			instance = clone(self.model)
@@ -166,8 +160,9 @@ class Model():
 
 			i += 1 
 
-		print("Log error across all validation folds for {} is {}".format(self.model_name, get_error(y_test, y_pred, type = "rmse")))
-		return y_pred_all
+		cv_error = get_error(y_test, y_pred, type = "rmse")
+		print("Log error across all validation folds for {} is {}".format(self.model_name, cv_error))
+		return y_pred_all, cv_error
 
 	def train_predict(self, X_train, y_train, X_predict):
 		# ~~~~~~~~~~~~~~~~~~ Summary ~~~~~~~~~~~~~~~~~~~~

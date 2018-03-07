@@ -16,6 +16,8 @@ import warnings
 from sklearn import clone
 from bayes_opt import BayesianOptimization
 import warnings
+import random
+from itertools import combinations
 
 
 
@@ -40,22 +42,42 @@ def main():
 	# These are then added to the stacking matrix.
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	numRounds = 100
-	models = ["lasso", "elastic", "lgb", "gboost", "gboost_deep", "xgb", "xgb_deep"] #svr, krr, ada
+	numRounds = 5
+	add_interaction = 1
+	models = ["lasso", "elastic", "xgb_new", "lgb", "gboost", "gboost_deep", "xgb", "xgb_deep"] #if you're not Andrew, add krr, ridge
+
 	X_stack_train = np.zeros((y_train.shape[0], len(models)*numRounds))
 	X_stack_predict = np.zeros((X_predict.shape[0], len(models)*numRounds))
+
 	for i in range(numRounds):
 		print("Will now run {} models and average their predictions...Round {} of {}.".format(len(models), i+1, numRounds))
 		j = 0
+
+		# Add interaction terms here X1*X2, X1*X2*X3
+		# 120 terms, 3600 
+		# X_train = X_train + inter_terms
+		if add_interaction:
+			X_train_inter, X_predict_inter = interaction_terms(X_train, X_predict)
+			X_train = np.concatenate((X_train, X_train_inter), axis = 1)
+			X_predict = np.concatenate((X_predict, X_predict_inter), axis = 1)
+
 		for model in models:
 			indexCol = len(models) * i + j
+
+			# Making user feedback
 			val = ((indexCol)/(len(models)*numRounds))*100
-			print("============================ {}% Complete ============================".format(round(val,5))
+			print("============================ {}% Complete ============================".format(round(val,5)))
 			instance = Model(model = model)
-			instance_pred = instance.train_validate(X_train, y_train)
-			instance_test_pred = instance.train_predict(X_train, y_train, X_predict)
-			X_stack_train[:,indexCol] = instance_pred
-			X_stack_predict[:,indexCol] = instance_test_pred
+
+			# Running model train, validation and prediction
+			instance_pred, cv_error = instance.train_validate(X_train, y_train)
+
+			if cv_error < .12
+				instance_test_pred = instance.train_predict(X_train, y_train, X_predict)
+
+				# Adding the predictions to the stacking matrices (training/validation, and prediction)
+				X_stack_train[:,indexCol] = instance_pred
+				X_stack_predict[:,indexCol] = instance_test_pred
 			j += 1
 
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -204,6 +226,37 @@ class Stacker():
 
 			# Convert to a csv
 			df.to_csv(filename, index=False)
+
+def interaction_terms(X_train, X_predict):
+	# 20 features
+
+	# 1. 
+	# Combine X_train, X_predict across horizontal
+	n_train = X_train.shape[0]
+	X = np.concatenate((X_train, X_predict), axis = 0)
+
+	# Subset columns
+	# Get list of column indices to use
+	num_row = X.shape[0]
+	num_cols = X.shape[1]
+	list_cols = random.sample(range(0, num_cols), 20)
+
+	# Get combos of 2 columns
+	cols_2_combo = list(combinations(list_cols, 2))
+
+	# Preallocate memory:
+	interaction_terms = np.zeros((num_row, len(cols_2_combo)))
+
+	# For each iteration in combinations, generate new data X1*X2, X1*X3, X2*X3, etc...
+	for i in range(len(cols_2_combo)):
+		interaction_terms[:,i] = np.multiply(X[:,cols_2_combo[i][0]], X[:,cols_2_combo[i][1]])
+
+	# 3. Split back
+	# Split across horizontal line to get back X_train, X_predict
+	train_interactions = interaction_terms[0:n_train,:]
+	predict_interactions = interaction_terms[n_train:,:]
+
+	return train_interactions, predict_interactions
 
 
 ##############################################################################################################################
