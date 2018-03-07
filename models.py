@@ -10,6 +10,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import KFold 
 from sklearn.svm import SVR
 
+sys.path.append(r"home/adodd202/HousingPrices/xgboost/python-package")
 import xgboost as xgb
 import numpy as np
 import lightgbm as lgb
