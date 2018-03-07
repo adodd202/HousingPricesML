@@ -72,7 +72,7 @@ def main():
 			# Running model train, validation and prediction
 			instance_pred, cv_error = instance.train_validate(X_train, y_train)
 
-			if cv_error < .12
+			if cv_error < .12:
 				instance_test_pred = instance.train_predict(X_train, y_train, X_predict)
 
 				# Adding the predictions to the stacking matrices (training/validation, and prediction)
