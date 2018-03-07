@@ -42,7 +42,7 @@ def main():
 
 	numRounds = 3
 	add_interaction = 0
-	models = ["lasso", "elastic", "xgb_new", "lgb", "gboost", "gboost_deep", "xgb", "xgb_deep"] #if you're not Andrew, add krr, ridge
+	models = ["lasso", "elastic", "lgb", "gboost", "gboost_deep"] # "xgb", "xgb_deep"#if you're not Andrew, add krr, ridge
 
 	X_stack_train = np.zeros((y_train.shape[0], len(models)*numRounds))
 	X_stack_predict = np.zeros((X_predict.shape[0], len(models)*numRounds))
