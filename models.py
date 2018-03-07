@@ -42,18 +42,18 @@ class Model():
 			self.model = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
                                    max_depth=4, max_features='sqrt',
                                    min_samples_leaf=15, min_samples_split=10, 
-                                   loss='huber', random_state =5)
+                                   loss='huber')
 		elif model == "gboost_deep":
 			self.model = GradientBoostingRegressor(n_estimators=5000, learning_rate=0.02,
                                    max_depth=6, max_features='sqrt',
                                    min_samples_leaf=17, min_samples_split=12, 
-                                   loss='huber', random_state =5)
+                                   loss='huber')
 		elif model == "ridge":
 			self.model = Ridge(alpha = .0005, random_state = 42)
 		elif model == "lasso":
-			self.model = Lasso(alpha = .0005, random_state = 42)
+			self.model = Lasso(alpha = .00055)
 		elif model == "elastic":
-			self.model = ElasticNet(alpha=.0005, l1_ratio=0.9, random_state=42)
+			self.model = ElasticNet(alpha=.0005, l1_ratio=0.9)
 		elif model == "rf":
 			self.model = RandomForestRegressor(n_estimators = 300, max_depth = 350, random_state = 42)
 		elif model == "krr":
@@ -66,7 +66,7 @@ class Model():
                              min_child_weight=1.7817, n_estimators=2200,
                              reg_alpha=0.4640, reg_lambda=0.8571,
                              subsample=0.5213, silent=1,
-                             random_state =7, nthread = -1)
+                           	 nthread = -1)
 
 		elif model == "xgb_deep":
 			self.model = xgb.XGBRegressor(colsample_bytree=0.4603, gamma=0.0468, 
@@ -74,7 +74,7 @@ class Model():
                              min_child_weight=1.7817, n_estimators=4000,
                              reg_alpha=0.4640, reg_lambda=0.8571,
                              subsample=0.5213, silent=1,
-                             random_state =7, nthread = -1)
+                              nthread = -1)
 		elif model == "adaboost":
 			self.model = AdaBoostRegressor(tree.DecisionTreeRegressor(),
                           n_estimators=500, random_state=42)
@@ -158,7 +158,7 @@ class Model():
 
 			i += 1 
 
-		cv_error = get_error(y_test, y_pred, type = "rmse")
+		cv_error = get_error(y_test, y_pred, type = "rmsle")
 		print("Log error across all validation folds for {} is {}".format(self.model_name, cv_error))
 		return y_pred_all, cv_error
 
