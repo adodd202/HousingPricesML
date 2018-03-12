@@ -135,6 +135,8 @@ class Model():
 			# Fitting
 			instance.fit(X_train, y_train) #, y_transform)
 
+			# print(instance.feature_importances_)
+
 			# Get predictions
 			y_pred = instance.predict(X_test)
 

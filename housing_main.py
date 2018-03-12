@@ -42,7 +42,7 @@ def main():
 
 	numRounds = 1
 	add_interaction = 0 # set to 0 for linear model
-	models = ["lasso", "elastic"] #, "xgb", "lgb", "gboost", "gboost_deep", "xgb_deep"] #if you're not Andrew, add krr, ridge
+	models = ["lgb"] #, "xgb", "lgb", "gboost", "gboost_deep", "xgb_deep"] #if you're not Andrew, add krr, ridge
 
 	X_stack_train = np.zeros((y_train.shape[0], len(models)*numRounds))
 	X_stack_predict = np.zeros((X_predict.shape[0], len(models)*numRounds))
@@ -495,13 +495,22 @@ def xgb_stack_func(min_child_weight,colsample_bytree,max_depth,subsample,gamma,a
 # For averaging past csvs:
 def average_csvs():
 	csv1 = pd.read_csv('./Predictions/CV_0.11361_LB_0.12880.csv')
+	csv1 = csv1.as_matrix()
 	csv2 = pd.read_csv('./Predictions/CV_0.11012_LB_0123.csv')
+	csv2 = csv2.as_matrix()
 	csv3 = pd.read_csv('./Predictions/CV_0.11021.csv')
+	csv3 = csv3.as_matrix()
 	csv4 = pd.read_csv('./Predictions/CV_0.10997.csv')
+	csv4 = csv4.as_matrix()
 	csv5 = pd.read_csv('./Predictions/CV_0.11152.csv')
+	csv5 = csv5.as_matrix()
 
-	csvs = np.concatenate((csv1, csv2, csv3, csv4, csv5), axis = 1)
+	print(csv1[:,1])
+
+	csvs = np.concatenate((csv1[:,1], csv2[:,1], csv3[:,1], csv4[:,1], csv5[:,1]), axis = 1)
 	y_pred = np.mean(csvs, axis = 1)
+
+	print(y_pred)
 
 	# Adding id column
 	id_num = np.arange(1461,2920)
@@ -514,9 +523,9 @@ def average_csvs():
 	df.columns = ['Id', 'SalePrice']
 	df[['Id']] = df[['Id']].astype(int)
 
-	filename = "combined_pred.csv"
-	# Convert to a csv
-	df.to_csv(filename, index=False)
+	# filename = "combined_pred.csv"
+	# # Convert to a csv
+	# df.to_csv(filename, index=False)
 
 
 # To import datasets for training and prediction:
@@ -555,9 +564,9 @@ def import_data(name_data):
 
 if __name__ == "__main__":
     # execute only if run as a script
-    # main()
+    main()
     # optimize()
-    average_csvs()
+    # average_csvs()
 
 
 
